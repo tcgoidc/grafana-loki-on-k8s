@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Check out repository code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -28,7 +28,7 @@ jobs:
         format: 'sarif'
         output: 'trivy-results.sarif'
     - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: 'trivy-results.sarif'
 
@@ -38,9 +38,9 @@ jobs:
     if: ${{ github.event_name == 'pull_request' }}
     steps:
       - name: Create k8s Kind Cluster
-        uses: helm/kind-action@v1.12.0
+        uses: helm/kind-action@v1.13.0
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Run K8s test
         run: |
           kubectl cluster-info
@@ -53,7 +53,7 @@ jobs:
     if: ${{ github.event_name == 'pull_request' }}
     steps:
     - name: Auto Approve PR
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
        github-token: ${{ github.token }}
        script: |
@@ -72,9 +72,9 @@ jobs:
   #     PR_NUMBER: ${{ github.event.number }}
   #   steps:
   #   - name: Check out repository code
-  #     uses: actions/checkout@v4
+  #     uses: actions/checkout@v6
   #   - name: Auto Merge PR
-  #     uses: actions/github-script@v7
+  #     uses: actions/github-script@v8
   #     with:
   #       github-token: ${{ github.token }}
   #       script: |

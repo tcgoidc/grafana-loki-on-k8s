@@ -8,7 +8,7 @@ metadata:
     prometheus.io/port: prom-metrics
     prometheus.io/scrape: "true"
 spec:
-  replicas: 1
+  revisionHistoryLimit: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: tempo
@@ -23,10 +23,28 @@ spec:
       containers:
       - args:
         - -config.file=/conf/tempo.yaml
-        - -mem-ballast-size-mbs=1024
-        image: docker.io/grafana/tempo:2.7.2
+        - -mem-ballast-size-mbs=512
+        - -generator.instance-id=$(POD_IP)
+        - -log.level=warn
+        - -config.expand-env=true
+        image: docker.io/grafana/tempo:2.9.0
         imagePullPolicy: IfNotPresent
         name: tempo
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: GOMAXPROCS
+          valueFrom:
+            resourceFieldRef:
+              divisor: '1'
+              resource: limits.cpu
+        - name: GOMEMLIMIT
+          valueFrom:
+            resourceFieldRef:
+              divisor: '1'
+              resource: limits.memory
         ports:
         - containerPort: 3100
           name: prom-metrics
@@ -55,10 +73,10 @@ spec:
         resources:
           limits:
             cpu: 100m
-            memory: "2Gi"
+            memory: 896Mi
           requests:
             cpu: 50m
-            memory: "1Gi"
+            memory: 512Mi
         volumeMounts:
         - mountPath: /conf
           name: tempo-conf
@@ -82,7 +100,7 @@ spec:
             type: RuntimeDefault
           capabilities:
             drop:
-              - ALL
+            - ALL
       volumes:
         - name: tempo-storage
           emptyDir:

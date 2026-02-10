@@ -25,8 +25,19 @@ spec:
         runAsNonRoot: true
       containers:
         - name: prometheus
-          image: docker.io/prom/prometheus:v3.3.0
+          image: docker.io/prom/prometheus:v3.8.0
           imagePullPolicy: IfNotPresent
+          env:
+            - name: GOMAXPROCS
+              valueFrom:
+                resourceFieldRef:
+                  divisor: '1'
+                  resource: limits.cpu
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  divisor: '1'
+                  resource: limits.memory
           args:
             - '--storage.tsdb.retention.time=15d'
             - '--config.file=/etc/prometheus/prometheus.yml'
@@ -39,8 +50,6 @@ spec:
             - '--web.enable-lifecycle'
             - '--log.level=warn'
             - '--log.format=json'
-            - '--no-auto-gomaxprocs'
-            - '--no-auto-gomemlimit'
           ports:
             - containerPort: 9090
               name: http
@@ -54,10 +63,10 @@ spec:
               port: http
           resources:
             limits:
-              cpu: 100m
-              memory: 1Gi
+              cpu: 150m
+              memory: 894Mi
             requests:
-              cpu: 50m
+              cpu: 100m
               memory: 512Mi
           volumeMounts:
             - name: config-volume

@@ -44,18 +44,29 @@ spec:
               subPath: dashboards
       containers:
       - name: grafana
-        image: docker.io/grafana/grafana:11.6.1
+        image: docker.io/grafana/grafana:12.3.0
         imagePullPolicy: IfNotPresent
+        env:
+        - name: GOMAXPROCS
+          valueFrom:
+            resourceFieldRef:
+              divisor: '1'
+              resource: limits.cpu
+        - name: GOMEMLIMIT
+          valueFrom:
+            resourceFieldRef:
+              divisor: '1'
+              resource: limits.memory
         ports:
         - containerPort: 3000
           name: http
         resources:
           limits:
             cpu: 100m
-            memory: "1Gi"
+            memory: 768Mi
           requests:
             cpu: 50m
-            memory: "512Mi"
+            memory: 512Mi
         volumeMounts:
           - name: grafana-storage
             mountPath: /var/lib/grafana
@@ -63,6 +74,12 @@ spec:
           - name: grafana-storage
             mountPath: /var/lib/grafana/dashboards
             subPath: dashboards
+          - name: grafana-storage
+            mountPath: /tmp
+            subPath: tmp
+          - name: grafana-ini
+            mountPath: /etc/grafana/grafana.ini
+            subPath: grafana.ini
           - name: dashboards
             mountPath: /etc/grafana/provisioning/dashboards/dashboards.yml
             subPath: dashboards.yml
@@ -102,6 +119,9 @@ spec:
         - name: datasources
           configMap:
             name: datasources
+        - name: grafana-ini
+          configMap:
+            name: grafana-ini
         - name: grafana-storage
           emptyDir:
-            sizeLimit: "1Gi"
+            sizeLimit: "2Gi"
